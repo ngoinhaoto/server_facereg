@@ -16,9 +16,6 @@ def process_batch_embeddings(self, image_data_list: List[bytes]) -> List[Tuple[O
         return results
     
     max_workers = 8 #since mac m1 has 8 cores
-
-    # if self.device and 'cuda' in str(self.device):
-    #     max_workers = ...
     
     try:
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
@@ -55,7 +52,6 @@ class DeepFaceService(FaceRecognitionBase):
 
             self.detector_backend = "yunet" #other options: "opencv", "ssd", "mtcnn", "retinaface", "centerface"
             
-            # Force model load with optimizations for the detected hardware
             self._load_optimized_model()
             
             logger.info(f"DeepFace model loaded successfully (model: {self.deepface_model_name}, detector: {self.detector_backend}, device: {self.device})")
@@ -101,7 +97,6 @@ class DeepFaceService(FaceRecognitionBase):
                     os.environ["OMP_NUM_THREADS"] = "8" 
                     os.environ["TF_GPU_ALLOCATOR"] = "cuda_malloc_async"
                     
-                    # Try to enable TensorRT if available (for NVIDIA GPUs)
                     try:
                         import tensorflow as tf
                         if hasattr(tf, 'config') and hasattr(tf.config, 'optimizer'):
@@ -149,7 +144,7 @@ class DeepFaceService(FaceRecognitionBase):
                 temp_path = temp.name
                 logger.info(f"Image saved to temporary file: {temp_path}")
                 
-                detector_to_use = "opencv"
+                detector_to_use = "yunet"
                 
                 img = cv2.imread(temp_path)
                 
@@ -164,10 +159,14 @@ class DeepFaceService(FaceRecognitionBase):
                         enforce_detection=False,
                         align=True
                     )
+
+                    #check for faces
                     
                     if not face_objs or len(face_objs) == 0:
                         logger.warning("No faces detected in image")
                         return None, 0.0, None, {"error": "No face detected in the image"}
+                    
+                    ## if there is face, lets check for completness in case they try to sneak in a part of their face to fake identity
                     
                     is_complete, error_message = self.check_face_completeness(face_objs[0], img)
                     if not is_complete:
@@ -185,49 +184,56 @@ class DeepFaceService(FaceRecognitionBase):
                     logger.error(f"Error during face detection or completeness check: {str(face_e)}")
                     return None, 0.0, None, {"error": f"Error detecting face: {str(face_e)}"}
                 
+
+                # if everything passes, lets check for spoofs
                 spoof_result = None
                 if check_spoofing:
                     try:
                         anti_spoof_faces = self.deepface.extract_faces(
                             img_path=temp_path,
-                            detector_backend=detector_to_use,
                             enforce_detection=False,
-                            align=True,
                             anti_spoofing=True
                         )
                         
                         logger.info(f"Anti-spoofing check completed, found {len(anti_spoof_faces) if anti_spoof_faces else 0} faces")
                         
-                        is_spoof = True  
-                        spoof_details = {"message": "No faces detected"}
-                        spoof_score = 0.5 
+                        is_spoof = True  # Default to spoof until proven otherwise
+                        spoof_details = {"message": "No faces detected in anti-spoofing check"}
                         
                         if anti_spoof_faces and len(anti_spoof_faces) > 0:
                             face_obj = anti_spoof_faces[0]
+                            logger.info(anti_spoof_faces)
                             is_real = face_obj.get("is_real", False)
+                            confidence = face_obj.get("antispoof_score", 0.0)
+                            logger.info(f"Anti-spoofing check result: is_real={is_real}, confidence={confidence}")
                             
-                            is_spoof = not is_real
-                            
-                            spoof_score = 0.0 if is_real else 0.8
-                            
+                            if is_real:
+                                is_spoof = False
+                                logger.info(f"DeepFace anti-spoofing result: Face appears to be real (is_real={is_real})")
+                            else:
+                                logger.warning(f"DeepFace anti-spoofing result: Potential spoof detected (is_real={is_real})")
+                                                            
                             spoof_details = {
                                 "message": "DeepFace anti-spoofing check",
                                 "face_region": face_obj.get("facial_area", {}),
-                                "confidence": face_obj.get("confidence", 0.0),
+                                "confidence": confidence,
+                                "is_real": is_real,
                                 "all_faces_real": all(face.get("is_real", False) for face in anti_spoof_faces)
                             }
-                            
-                            logger.info(f"DeepFace anti-spoofing result: is_real={is_real}")
+                        else:
+                            # If no faces were found in anti-spoofing check but we found faces earlier,
+                            # it's likely a processing error rather than an actual spoof
+                            logger.warning("No faces detected during anti-spoofing check, but faces were detected earlier")
                         
                         spoof_result = {
                             "is_spoof": is_spoof,
-                            "spoof_score": spoof_score,
                             "details": spoof_details,
                             "method": "deepface_native"
                         }
                         
+                        # Check against the configured threshold
                         if is_spoof:
-                            logger.warning("Spoofing detected, skipping embedding extraction")
+                            logger.warning(f"Spoofing detected, skipping embedding extraction")
                             if os.path.exists(temp_path):
                                 os.unlink(temp_path)
                             return None, 0.0, None, spoof_result
@@ -237,7 +243,6 @@ class DeepFaceService(FaceRecognitionBase):
 
                         spoof_result = {
                             "is_spoof": False,
-                            "spoof_score": 0.0,
                             "details": {
                                 "message": "Anti-spoofing check failed, defaulting to not a spoof",
                                 "error": str(spoof_e)
@@ -245,6 +250,7 @@ class DeepFaceService(FaceRecognitionBase):
                             "method": "deepface_fallback"
                         }
             
+            ## if no errors checked, proceed with embedding extraction
             logger.info(f"Calling DeepFace.represent with model={self.deepface_model_name}, detector={detector_to_use}")
             try:
                 embedding_obj = self.deepface.represent(
@@ -272,7 +278,7 @@ class DeepFaceService(FaceRecognitionBase):
             
             logger.info(f"Embedding extracted with shape: {embedding_array.shape}")
             
-            confidence_score = face_objs[0].get("confidence", 0.9)
+            confidence_score = face_objs[0].get("confidence")
             
             aligned_face_bytes = None
             try:
@@ -325,7 +331,6 @@ class DeepFaceService(FaceRecognitionBase):
     
 
     def _fallback_extraction(self, temp_path: str) -> Tuple[Optional[np.ndarray], float, Optional[bytes]]:
-        """Fallback face extraction using OpenCV if DeepFace fails"""
         try:
             img = cv2.imread(temp_path)
             if img is None:
@@ -397,14 +402,11 @@ class DeepFaceService(FaceRecognitionBase):
     def detect_spoofing(self, image_data: bytes) -> dict:
         """DeepFace-specific anti-spoofing implementation using the combined extraction method"""
         try:
-            # Call the integrated method with check_spoofing=True
             _, _, _, spoof_result = self.extract_face_embedding(image_data, check_spoofing=True)
             
-            # If we got a result, return it
             if spoof_result:
                 return spoof_result
             
-            # If no result was returned (shouldn't happen), return a default
             return {
                 "is_spoof": False,
                 "spoof_score": 0.0,

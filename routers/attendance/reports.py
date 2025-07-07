@@ -41,14 +41,29 @@ async def get_session_attendance(
     result = []
     
     for attendance in attendances:
-        result.append({
-            "student_id": attendance.student_id,
-            "username": attendance.student.username,
-            "full_name": attendance.student.full_name,
-            "status": attendance.status,
-            "check_in_time": attendance.check_in_time,
-            "late_minutes": attendance.late_minutes
-        })
+        # Check if student exists before accessing its attributes
+        if attendance.student is None:
+            # Handle the case where student is None
+            student_data = {
+                "student_id": attendance.student_id,
+                "username": f"Unknown (ID: {attendance.student_id})",
+                "full_name": "Unknown Student",
+                "status": attendance.status,
+                "check_in_time": attendance.check_in_time,
+                "late_minutes": attendance.late_minutes
+            }
+        else:
+            # Student exists, access attributes normally
+            student_data = {
+                "student_id": attendance.student_id,
+                "username": attendance.student.username,
+                "full_name": attendance.student.full_name,
+                "status": attendance.status,
+                "check_in_time": attendance.check_in_time,
+                "late_minutes": attendance.late_minutes
+            }
+        
+        result.append(student_data)
     
     return result
 

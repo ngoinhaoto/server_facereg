@@ -17,12 +17,11 @@ async def check_in(
     session_id: int,
     file: UploadFile = File(...),
     model: str = None,
-    try_both_models: bool = True,
+    try_both_models: bool = False,
     background_tasks: BackgroundTasks = None,
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_active_user)
 ):
-    # Use configuration if parameters aren't provided
     if model is None:
         model = face_recognition_config.get_model_for_operation("check_in")
     
@@ -63,7 +62,6 @@ async def check_in(
         lambda: face_service.extract_face_embedding(processed_image, check_spoofing=face_recognition_config.ENABLE_ANTISPOOFING)
     )
     
-    # Check if we got 3 or 4 values (for backward compatibility)
     if len(result) == 3:
         embedding, confidence, aligned_face = result
         spoof_result = None
@@ -74,7 +72,7 @@ async def check_in(
         if spoof_result.get("is_spoof", False):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Spoofing detected. Please use a real face for authentication. Score: {spoof_result.get('spoof_score', 0):.2f}"
+                detail=f"Spoofing detected. Please use a real face for authentication."
             )
             
         if spoof_result.get("incomplete_face", False):
@@ -89,13 +87,11 @@ async def check_in(
             detail="No face detected in the image. Please try with a clearer photo showing your full face."
         )
     
-    # First try matching with the current model
     match, matched_user_id, similarity = await run_in_threadpool(
         lambda: face_service.compare_face(embedding, db, user_id=None, 
                                          threshold=face_recognition_config.SIMILARITY_THRESHOLD)
     )
     
-    # If no match found and try_both_models is enabled, try with the other model
     if not match and try_both_models:
         other_model = "insightface" if model == "deepface" else "deepface"
         logger.info(f"No match found with {model}, trying {other_model}")
@@ -105,7 +101,6 @@ async def check_in(
             lambda: other_service.extract_face_embedding(processed_image)
         )
         
-        # Handle different return formats
         if len(result) == 3:
             other_embedding, other_confidence, _ = result
         else:
@@ -119,31 +114,11 @@ async def check_in(
             
             if match:
                 logger.info(f"Match found with alternate model {other_model}, similarity: {similarity:.2f}")
-                # Update the active model and embedding for the rest of the function
                 model = other_model
                 face_service = other_service
                 embedding = other_embedding
                 confidence = other_confidence
-    
-    # If no match found and current user has no embeddings, allow first-time registration
-    if not match and current_user.role == "student":
-        embeddings_count = await run_in_threadpool(
-            lambda: face_service.get_user_embeddings_count(db, current_user.id)
-        )
         
-        if embeddings_count == 0:
-            logger.info(f"First-time face registration for user {current_user.id}")
-            # Store the embedding
-            await run_in_threadpool(
-                lambda: face_service.store_face_embedding(
-                    db, current_user.id, embedding, confidence, "attendance"
-                )
-            )
-            # Use the current user since this is their first registration
-            matched_user_id = current_user.id
-            match = True
-    
-    # If still no match, authentication failed
     if not match:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

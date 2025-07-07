@@ -4,7 +4,7 @@ from typing import List, Optional
 from database.db import get_db
 from schemas.class_schema import ClassCreate, ClassResponse, ClassUpdate, ClassWithTeacherResponse
 from schemas.user import UserResponse
-from crud.class_crud import create_class, get_class, get_classes, update_class, delete_class
+from crud.class_crud import create_class, get_class, get_classes, update_class, delete_class, get_class_sessions
 from security.auth import get_current_active_user, get_current_teacher_or_admin
 from starlette.concurrency import run_in_threadpool
 from models.database import Class, User
@@ -43,6 +43,9 @@ async def create_class_endpoint(
 async def read_classes(
     skip: int = 0, 
     limit: int = 100,
+    include_students: bool = False,
+    include_sessions: bool = False,  # Add this parameter
+    include_sessions_count: bool = False,
     teacher_id: Optional[int] = None,
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_active_user)
@@ -59,7 +62,6 @@ async def read_classes(
     # Enhance classes with teacher information
     result = []
     for class_obj in classes:
-        # Convert to dict for easier manipulation
         class_dict = {
             "id": class_obj.id,
             "class_code": class_obj.class_code,
@@ -73,7 +75,7 @@ async def read_classes(
             "end_time": class_obj.end_time,
             "created_at": class_obj.created_at,
             "updated_at": class_obj.updated_at,
-            "teacher": None
+            "teacher": None,
         }
         
         # Add teacher information if available
@@ -86,6 +88,36 @@ async def read_classes(
                     "username": teacher.username
                 }
         
+        # Add sessions if requested
+        if include_sessions:
+            class_dict["sessions"] = [
+                {
+                    "id": s.id,
+                    "class_id": s.class_id,
+                    "session_date": s.session_date,
+                    "start_time": s.start_time,
+                    "end_time": s.end_time,
+                    "notes": s.notes,
+                }
+                for s in get_class_sessions(db, class_id=class_obj.id)
+            ]
+        else:
+            class_dict["sessions"] = []  # Always include as array
+
+        # Add students if requested
+        if include_students:
+            class_dict["students"] = [
+                {
+                    "id": student.id,
+                    "full_name": student.full_name,
+                    "username": student.username,
+                    "email": student.email,
+                }
+                for student in class_obj.students
+            ]
+        else:
+            class_dict["students"] = []  # Always include as array
+
         result.append(class_dict)
     
     return result
@@ -94,7 +126,9 @@ async def read_classes(
 async def read_class(
     class_id: int, 
     db: Session = Depends(get_db),
-    current_user: UserResponse = Depends(get_current_active_user)
+    current_user: UserResponse = Depends(get_current_active_user),
+    include_students: bool = True,
+    include_sessions: bool = True,
 ):
     """Get a specific class by ID."""
     db_class = get_class(db, class_id=class_id)
@@ -123,9 +157,9 @@ async def read_class(
         "end_time": db_class.end_time,
         "created_at": db_class.created_at,
         "updated_at": db_class.updated_at,
-        "teacher": None
+        "teacher": None,
     }
-    
+
     if db_class.teacher_id:
         teacher = db.query(User).filter(User.id == db_class.teacher_id).first()
         if teacher:
@@ -134,7 +168,30 @@ async def read_class(
                 "full_name": teacher.full_name,
                 "username": teacher.username
             }
-    
+
+    # Always include students and sessions arrays
+    response["students"] = [
+        {
+            "id": student.id,
+            "full_name": student.full_name,
+            "username": student.username,
+            "email": student.email,
+        }
+        for student in db_class.students
+    ] if include_students else []
+
+    response["sessions"] = [
+        {
+            "id": s.id,
+            "class_id": s.class_id,
+            "session_date": s.session_date,
+            "start_time": s.start_time,
+            "end_time": s.end_time,
+            "notes": s.notes,
+        }
+        for s in get_class_sessions(db, class_id=db_class.id)
+    ] if include_sessions else []
+
     return response
 
 @router.put("/{class_id}", response_model=ClassResponse)

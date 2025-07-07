@@ -76,3 +76,4 @@ class TeacherInfo(BaseModel):
 
 class ClassWithTeacherResponse(ClassResponse):
     teacher: Optional[TeacherInfo] = None
+    sessions: Optional[List[ClassSessionBase]] = None

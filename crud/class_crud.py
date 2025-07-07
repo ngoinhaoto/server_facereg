@@ -115,6 +115,7 @@ def get_session(db: Session, session_id: int):
     return db.query(ClassSession).filter(ClassSession.id == session_id).first()
 
 def get_class_sessions(db: Session, class_id: int):
+    """Get all sessions for a specific class."""
     return db.query(ClassSession).filter(ClassSession.class_id == class_id).all()
 
 def create_class_session(db: Session, session: ClassSessionCreate) -> ClassSession:

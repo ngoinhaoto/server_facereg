@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #4CAF50; color: white; padding: 10px; text-align: center; }
+        .content { padding: 20px; }
+        .status { font-weight: bold; }
+        .present { color: #4CAF50; }
+        .late { color: #FF9800; }
+        .absent { color: #F44336; }
+        .footer { text-align: center; margin-top: 20px; font-size: 0.8em; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Attendance Recorded</h1>
+        </div>
+        <div class="content">
+            <p>Hello {{ user_name }},</p>
+            <p>Your attendance has been recorded for the following class:</p>
+            <p><strong>Class:</strong> {{ class_name }}<br>
+               <strong>Date:</strong> {{ session_date }}<br>
+               <strong>Status:</strong> 
+               <span class="status {{ status|lower }}">{{ status }}</span>
+            </p>
+            <p>Thank you for using our Face Attendance System!</p>
+            <p>Best regards,<br>Face Attendance Team</p>
+        </div>
+        <div class="footer">
+            <p>This is an automated email. Please do not reply.</p>
+        </div>
+    </div>
+</body>
+</html>

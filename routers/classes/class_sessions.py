@@ -11,7 +11,7 @@ from crud.class_crud import (
     create_class_session, update_class_session, delete_class_session
 )
 from security.auth import get_current_active_user, get_current_teacher_or_admin
-from models.database import User
+from models.database import User, ClassSession
 
 router = APIRouter(tags=["Class Sessions"])
 
@@ -197,5 +197,55 @@ async def get_multiple_class_sessions(
             continue
             
         result[str(class_id)] = get_class_sessions(db, class_id=class_id)
+    
+    return result
+
+@router.get("/{class_id}/sessions/{session_id}/attendance")
+async def get_session_attendance_by_class(
+    class_id: int,
+    session_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user)
+):
+    """
+    Get attendance records for a specific class session.
+    """
+    # First, check if the session belongs to the specified class
+    session = db.query(ClassSession).filter(
+        ClassSession.id == session_id,
+        ClassSession.class_id == class_id
+    ).first()
+    
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Session not found or doesn't belong to the specified class"
+        )
+    
+    # Reuse logic from the existing attendance endpoint
+    attendances = session.attendances
+    result = []
+    
+    for attendance in attendances:
+        if attendance.student is None:
+            student_data = {
+                "student_id": attendance.student_id,
+                "username": f"Unknown (ID: {attendance.student_id})",
+                "full_name": "Unknown Student",
+                "status": attendance.status,
+                "check_in_time": attendance.check_in_time,
+                "late_minutes": attendance.late_minutes
+            }
+        else:
+            student_data = {
+                "student_id": attendance.student_id,
+                "username": attendance.student.username,
+                "full_name": attendance.student.full_name,
+                "status": attendance.status,
+                "check_in_time": attendance.check_in_time,
+                "late_minutes": attendance.late_minutes
+            }
+        
+        result.append(student_data)
     
     return result

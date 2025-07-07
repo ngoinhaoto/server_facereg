@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from database.db import get_db
@@ -13,11 +13,16 @@ from crud.user import (
 )
 from security.auth import get_current_active_user, get_current_admin_user
 from fastapi.concurrency import run_in_threadpool
+from services.email_service import email_service
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
 @router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-async def register_user(user: UserCreate, db: Session = Depends(get_db)):
+async def register_user(
+    user: UserCreate, 
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db)
+):
     # Check email and username as before
     db_user = await run_in_threadpool(lambda: get_user_by_email(db, email=user.email))
     if db_user:
@@ -51,7 +56,16 @@ async def register_user(user: UserCreate, db: Session = Depends(get_db)):
                 detail="Staff ID already registered"
             )
     
-    return await run_in_threadpool(lambda: create_user(db=db, user=user))
+    new_user = await run_in_threadpool(lambda: create_user(db=db, user=user))
+    
+    email_service.send_welcome_email(
+        background_tasks,
+        new_user.email,
+        new_user.full_name or new_user.username,
+        new_user.role
+    )
+    
+    return new_user
 
 @router.get("/", response_model=List[UserResponse])
 async def read_users(

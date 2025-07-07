@@ -16,8 +16,8 @@ class FaceRecognitionConfig(BaseModel):
     ENABLE_ANTISPOOFING: bool = True
     ENABLE_FALLBACK: bool = True
     
-    ANTI_SPOOFING_THRESHOLD: float = 0.5 
-    REGISTRATION_ANTI_SPOOFING_THRESHOLD: float = 0.7  
+    ANTI_SPOOFING_THRESHOLD: float = 0.85
+    REGISTRATION_ANTI_SPOOFING_THRESHOLD: float = 0.85
     ENABLE_REGISTRATION_ANTISPOOFING: bool = True  
     
 
