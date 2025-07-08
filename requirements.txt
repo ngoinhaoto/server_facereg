@@ -124,6 +124,7 @@ pydantic==2.11.4
 pydantic-settings==2.9.1
 pydantic_core==2.33.2
 Pygments==2.19.1
+Pympler==1.1
 pyparsing==3.2.3
 PySocks==1.7.1
 pytest==7.1.2
@@ -157,6 +158,7 @@ stack-data==0.6.3
 starlette==0.46.2
 stringzilla==3.12.5
 sympy==1.12
+tenseal==0.3.16
 tensorboard==2.19.0
 tensorboard-data-server==0.7.2
 tensorflow==2.19.0
