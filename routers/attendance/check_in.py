@@ -9,8 +9,13 @@ from datetime import datetime, timezone
 from starlette.concurrency import run_in_threadpool
 from utils.logging import logger
 from config.face_recognition_config import face_recognition_config
+from pydantic import BaseModel
 
 router = APIRouter()
+
+class AttendanceUpdateRequest(BaseModel):
+    status: str
+    late_minutes: int = 0
 
 @router.post("/check-in")
 async def check_in(
@@ -248,3 +253,43 @@ async def check_in(
         },
         "check_in_time": now
     }
+
+@router.put("/sessions/{session_id}/students/{student_id}")
+async def manual_update_attendance(
+    session_id: int,
+    student_id: int,
+    data: AttendanceUpdateRequest,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user)
+):
+    status = data.status
+    late_minutes = data.late_minutes
+    # Only allow admin or teacher
+    if current_user.role not in ("admin", "teacher"):
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    attendance = db.query(Attendance).filter_by(
+        session_id=session_id, student_id=student_id
+    ).first()
+    if not attendance:
+        # Create a new attendance record if not found
+        attendance = Attendance(
+            session_id=session_id,
+            student_id=student_id,
+            status=status,
+            late_minutes=late_minutes,
+            check_in_time=None  # or datetime.now() if you want
+        )
+        db.add(attendance)
+    else:
+        attendance.status = status
+        attendance.late_minutes = late_minutes
+
+    db.commit()
+    db.refresh(attendance)
+    return {"success": True, "attendance": {
+        "student_id": attendance.student_id,
+        "session_id": attendance.session_id,
+        "status": attendance.status,
+        "late_minutes": attendance.late_minutes,
+    }}

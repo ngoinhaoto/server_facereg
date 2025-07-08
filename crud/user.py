@@ -80,7 +80,10 @@ def delete_user(db: Session, user_id: int):
     db_user = db.query(User).filter(User.id == user_id).first()
     if not db_user:
         return False
-    
+
+    from models.database import Attendance  
+    db.query(Attendance).filter(Attendance.student_id == user_id).delete(synchronize_session=False)
+
     db.delete(db_user)
     db.commit()
     return True

@@ -170,3 +170,12 @@ async def get_multiple_sessions_attendance(
         result[session_id] = session_result
     
     return result
+
+@router.get("/sessions/{session_id}")
+async def get_session_attendance_shortcut(
+    session_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user)
+):
+
+    return await get_session_attendance(session_id, db, current_user)
