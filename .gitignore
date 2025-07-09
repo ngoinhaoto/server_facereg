@@ -3,3 +3,4 @@ facereg_env/
 models/
 data/
 sample_images/
+*.pyc
