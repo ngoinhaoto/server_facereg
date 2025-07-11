@@ -22,7 +22,7 @@ class FaceRecognitionConfig(BaseModel):
     
 
     ENABLE_DUPLICATE_DETECTION: bool = True 
-    DUPLICATE_DETECTION_THRESHOLD: float = 0.45 
+    DUPLICATE_DETECTION_THRESHOLD: float = 0.5
     
     SIMILARITY_THRESHOLD: float = 0.5
     
