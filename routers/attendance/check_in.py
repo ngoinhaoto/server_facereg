@@ -55,14 +55,11 @@ async def check_in(
     
     image_data = await file.read()
     
-    # Extract face embedding with the primary model
     face_service = FaceRecognitionService.get_instance(model_type=model)
     processed_image = await run_in_threadpool(
         lambda: face_service.preprocess_image(image_data)
     )
     
-    # Combine anti-spoofing and face extraction in one call
-    # This also checks for face completeness
     result = await run_in_threadpool(
         lambda: face_service.extract_face_embedding(processed_image, check_spoofing=face_recognition_config.ENABLE_ANTISPOOFING)
     )
@@ -73,25 +70,39 @@ async def check_in(
     else:
         embedding, confidence, aligned_face, spoof_result = result
     
-    if spoof_result:
-        if spoof_result.get("is_spoof", False):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Spoofing detected. Please use a real face for authentication."
-            )
-            
-        if spoof_result.get("incomplete_face", False):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Incomplete face detected: {spoof_result.get('error', 'Please ensure your entire face is visible in the frame.')}"
-            )
-    
+    # Handle face detection errors
     if embedding is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No face detected in the image. Please try with a clearer photo showing your full face."
-        )
+        # Check for specific error types in spoof_result
+        if spoof_result and "error" in spoof_result:
+            error_msg = spoof_result["error"]
+            
+            # Check for incomplete face error
+            if spoof_result.get("incomplete_face", False):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Incomplete face detected: {error_msg}"
+                )
+            
+            # Check for spoofing error
+            if spoof_result.get("is_spoof", False):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Spoofing detected. Please use a real face for authentication."
+                )
+            
+            # Generic face detection error
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=error_msg if "No face detected" in error_msg else "No face detected in the image. Please try with a clearer photo showing your full face."
+            )
+        else:
+            # Default error if no spoof_result
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No face detected in the image. Please try with a clearer photo showing your full face."
+            )
     
+    # Continue with face matching
     match, matched_user_id, similarity = await run_in_threadpool(
         lambda: face_service.compare_face(embedding, db, user_id=None, 
                                          threshold=face_recognition_config.SIMILARITY_THRESHOLD)
@@ -129,6 +140,9 @@ async def check_in(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"Face verification failed. No matching user found (best similarity: {similarity:.2f})."
         )
+    
+    # Rest of the endpoint remains the same...
+    # [Continue with existing code for user verification, attendance recording, etc.]
     
     # Now get the student user who matched
     student_user = db.query(User).filter(User.id == matched_user_id).first()
@@ -203,21 +217,21 @@ async def check_in(
         )
         db.add(attendance)
     
-    # Optionally store this new face to improve recognition if it's the student's own face
-    if match and similarity < 0.85 and similarity > 0.65 and current_user.id == matched_user_id:
-        embeddings_count = await run_in_threadpool(
-            lambda: face_service.get_user_embeddings_count(db, matched_user_id)
-        )
+    # # Optionally store this new face to improve recognition if it's the student's own face
+    # if match and similarity < 0.85 and similarity > 0.65 and current_user.id == matched_user_id:
+    #     embeddings_count = await run_in_threadpool(
+    #         lambda: face_service.get_user_embeddings_count(db, matched_user_id)
+    #     )
         
-        if embeddings_count < 10 and background_tasks:
-            background_tasks.add_task(
-                face_service.store_face_embedding,
-                db=db, 
-                user_id=matched_user_id,
-                embedding=embedding,
-                confidence=confidence,
-                device_id="auto_update"
-            )
+    #     if embeddings_count < 10 and background_tasks:
+    #         background_tasks.add_task(
+    #             face_service.store_face_embedding,
+    #             db=db, 
+    #             user_id=matched_user_id,
+    #             embedding=embedding,
+    #             confidence=confidence,
+    #             device_id="auto_update"
+    #         )
     
     db.commit()
     
@@ -253,6 +267,7 @@ async def check_in(
         },
         "check_in_time": now
     }
+
 
 @router.put("/sessions/{session_id}/students/{student_id}")
 async def manual_update_attendance(

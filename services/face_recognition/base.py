@@ -49,11 +49,11 @@ class FaceRecognitionBase:
         try:
             model_to_use = model_type if model_type else self.model_type
             
-            binary_embedding = pickle.dumps(embedding)
+            # binary_embedding = pickle.dumps(embedding)
             
             db_embedding = FaceEmbedding(
                 user_id=user_id,
-                encrypted_embedding=binary_embedding,
+                embedding=embedding,
                 confidence_score=confidence,
                 device_id=device_id,
                 model_type=model_to_use,
@@ -101,7 +101,8 @@ class FaceRecognitionBase:
             for stored in stored_embeddings:
                 # Deserialize the stored embedding
                 try:
-                    stored_embedding = pickle.loads(stored.encrypted_embedding)
+                    # stored_embedding = pickle.loads(stored.encrypted_embedding)
+                    stored_embedding = stored.embedding
                     
                     # Calculate cosine similarity
                     similarity = self.calculate_similarity(embedding, stored_embedding)

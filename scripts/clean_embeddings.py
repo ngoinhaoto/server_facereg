@@ -26,7 +26,7 @@ def clean_embeddings():
         for embedding in embeddings:
             try:
                 # Try to deserialize the embedding
-                pickle.loads(embedding.encrypted_embedding)
+                pickle.loads(embedding.embedding)
                 valid += 1
             except Exception as e:
                 # If we can't deserialize, delete it

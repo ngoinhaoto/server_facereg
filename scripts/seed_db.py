@@ -9,7 +9,6 @@ from database.db import SessionLocal
 from security.password import get_password_hash
 import random
 import numpy as np
-import pickle
 
 def create_sample_data():
     db = SessionLocal()
@@ -214,17 +213,18 @@ def create_sample_data():
                 )
                 db.add(attendance)
         
-        # Create dummy face embeddings (normally these would be encrypted vectors)
+        # Create face embeddings using pgvector format (no more pickle!)
         for student in students:
-            # Create a properly pickled embedding (random 512-dim vector)
-            embedding_vector = np.random.rand(512).astype(np.float32)  # Use correct dimensions
-            pickled_embedding = pickle.dumps(embedding_vector)
+            # Create a random 512-dimensional vector for pgvector
+            embedding_vector = np.random.rand(512).astype(np.float32).tolist()  # Convert to list for pgvector
             
             embedding = FaceEmbedding(
                 user_id=student.id,
-                encrypted_embedding=pickled_embedding,
+                embedding=embedding_vector,  # Direct assignment - pgvector handles this
                 confidence_score=0.95,
-                device_id="test_device_001"
+                device_id="test_device_001",
+                model_type="facenet512",
+                registration_group_id="default_group"
             )
             db.add(embedding)
         

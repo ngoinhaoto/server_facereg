@@ -34,10 +34,11 @@ class DuplicateFaceDetector:
                 embeddings_with_users = result.all()
                 
                 for face_embedding, user in embeddings_with_users:
-                    if face_embedding.encrypted_embedding is not None:
+                    if face_embedding.embedding is not None:
                         try:
                             # Use pickle.loads to unpickle the embedding
-                            stored_embedding = pickle.loads(face_embedding.encrypted_embedding)
+                            # stored_embedding = pickle.loads(face_embedding.embedding)
+                            stored_embedding = face_embedding.embedding
                             
                             # Calculate cosine similarity
                             similarity = np.dot(embedding, stored_embedding) / (

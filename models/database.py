@@ -4,6 +4,7 @@ from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 import uuid
 import enum
+from pgvector.sqlalchemy import Vector
 
 Base = declarative_base()
 
@@ -100,14 +101,13 @@ class FaceEmbedding(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
-    encrypted_embedding = Column(LargeBinary, nullable=False)
+    embedding = Column(Vector(512), nullable=False)  # This is correct for pgvector
     confidence_score = Column(Float)
     device_id = Column(String, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     model_type = Column(String, index=True)
-    registration_group_id = Column(String, index=True)  # Add this column
+    registration_group_id = Column(String, index=True)
 
-    # Relationships
     user = relationship("User", back_populates="face_embeddings")
     face_image = relationship("FaceImage", back_populates="embedding", uselist=False, cascade="all, delete")
 
