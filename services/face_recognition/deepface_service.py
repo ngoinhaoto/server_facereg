@@ -8,6 +8,7 @@ import functools
 from utils.logging import logger
 from services.face_recognition.base import FaceRecognitionBase
 from config.face_recognition_config import face_recognition_config
+from deepface import DeepFace 
 
 def process_batch_embeddings(self, image_data_list: List[bytes]) -> List[Tuple[Optional[np.ndarray], float, Optional[bytes]]]:
     results = []
@@ -175,6 +176,7 @@ class DeepFaceService(FaceRecognitionBase):
             logger.info(f"Face detection successful: {len(face_objs)} face(s) found")
             
             # STEP 2: Face Completeness Check
+            logger.info(f"PRINTING FACE LANDMARKS: {face_objs[0]['facial_area']}")
             logger.info("Step 2: Face completeness check")
             is_complete, error_message = self.check_face_completeness(face_objs[0], img)
             if not is_complete:
@@ -209,6 +211,7 @@ class DeepFaceService(FaceRecognitionBase):
                         }
                     else:
                         face_obj = anti_spoof_faces[0]
+                        logger.info(f"Anti-spoofing face object: {face_obj}")
                         is_real = face_obj.get("is_real", False)
                         confidence = face_obj.get("antispoof_score", 0.0)
                         
@@ -255,8 +258,10 @@ class DeepFaceService(FaceRecognitionBase):
                     img_path=temp_path,
                     model_name=self.deepface_model_name,
                     detector_backend=self.detector_backend,
-                    enforce_detection=False,
-                    align=True
+                    enforce_detection=True,
+                    normalization="base",
+                    align=True,
+                    max_faces=1
                 )
             except Exception as embed_error:
                 logger.error(f"DeepFace.represent failed: {str(embed_error)}")
@@ -275,8 +280,7 @@ class DeepFaceService(FaceRecognitionBase):
             
             logger.info(f"Embedding extracted with shape: {embedding_array.shape}")
             
-            # Get confidence score from face detection
-            confidence_score = face_objs[0].get("confidence", 0.9)  # Default to 0.9 if not available
+            confidence_score = face_objs[0].get("confidence", 0.9)  
             
             # Extract aligned face image
             aligned_face_bytes = None
@@ -450,76 +454,61 @@ class DeepFaceService(FaceRecognitionBase):
             logger.error(f"Error in memory management: {str(e)}")
     
     def check_face_completeness(self, face_obj, img=None) -> Tuple[bool, Optional[str]]:
-        """
-        Check if the face is complete (entire face is visible in the frame).
-        
-        Args:
-            face_obj: The face object from DeepFace extract_faces
-            img: Original image (numpy array) if available
-            
-       """
         try:
             if not face_obj:
                 return False, "No face detected"
                 
-            # If it's a list, use the first face
+            # Use first face if list
             if isinstance(face_obj, list) and len(face_obj) > 0:
                 face_obj = face_obj[0]
             
-            # Get image dimensions if available
-            img_width, img_height = 0, 0
-            if img is not None:
-                img_height, img_width = img.shape[:2]
+            # Require input image
+            if img is None:
+                return False, "Input image required for accurate dimension checks"
             
-            # Get face region (facial_area) from DeepFace
+            # Get image dimensions
+            img_height, img_width = img.shape[:2]
+            
+            # Get face region
             if "facial_area" not in face_obj:
                 return False, "No facial area information available"
                 
             facial_area = face_obj["facial_area"]
+            x, y, w, h = facial_area.get("x", 0), facial_area.get("y", 0), facial_area.get("w", 0), facial_area.get("h", 0)
             
-            # Get face coordinates
-            x = facial_area.get("x", 0)
-            y = facial_area.get("y", 0)
-            w = facial_area.get("w", 0)
-            h = facial_area.get("h", 0)
+            if "facial_landmarks" in face_obj:
+                required_landmarks = ["left_eye", "right_eye", "nose", "mouth_left", "mouth_right"]
+                missing = [lm for lm in required_landmarks if lm not in face_obj["facial_landmarks"]]
+                if missing:
+                    return False, f"Missing landmarks: {', '.join(missing)}"
             
-            # If we couldn't determine image dimensions earlier, try to infer from face
-            if img_width == 0 and "img" in face_obj:
+            # Basic occlusion check (heuristic: check for abnormal pixel intensity in facial area)
+            if "img" in face_obj:
                 face_img = face_obj["img"]
-                if face_img is not None:
-                    img_height, img_width = face_img.shape[:2]
-                    # Since this is the face crop, we need to adjust based on known coordinates
-                    img_width = max(img_width, x + w)
-                    img_height = max(img_height, y + h)
+                mean_intensity = face_img.mean()
+                if mean_intensity < face_recognition_config.MIN_FACE_INTENSITY:
+                    return False, "Possible occlusion detected (low intensity)"
             
-            # If we still don't have image dimensions, use detection confidence only
-            if img_width == 0:
-                if "confidence" in face_obj and face_obj["confidence"] < face_recognition_config.FACE_DETECTION_CONFIDENCE:
-                    return False, "Face detection confidence too low"
-                return True, None
-            
+            # Check face size
             width_ratio = w / img_width
             height_ratio = h / img_height
-            
             if width_ratio < face_recognition_config.FACE_MIN_WIDTH_RATIO:
                 return False, "Face too small (width)"
-                
             if height_ratio < face_recognition_config.FACE_MIN_HEIGHT_RATIO:
                 return False, "Face too small (height)"
             
-            # Check if face is too close to the edge
+            # Check if face is too close to edge
             margin_ratio = face_recognition_config.FACE_MARGIN_RATIO
-            margin_x = img_width * margin_ratio
-            margin_y = img_height * margin_ratio
-            
+            margin_x, margin_y = img_width * margin_ratio, img_height * margin_ratio
             if x < margin_x or (x + w) > (img_width - margin_x) or y < margin_y or (y + h) > (img_height - margin_y):
                 return False, "Face too close to image edge"
             
+            # Check detection confidence
             if "confidence" in face_obj and face_obj["confidence"] < face_recognition_config.FACE_DETECTION_CONFIDENCE:
                 return False, "Face detection confidence too low"
             
             return True, None
-            
+        
         except Exception as e:
-            logger.error(f"Error checking face completeness in DeepFace: {str(e)}")
+            logger.error(f"Error checking face completeness: {str(e)}")
             return False, f"Error checking face completeness: {str(e)}"

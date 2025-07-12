@@ -3,7 +3,8 @@ import numpy as np
 from sqlalchemy.orm import Session
 import os
 from utils.logging import logger
-
+from deepface import DeepFace 
+from config.face_recognition_config import face_recognition_config
 ModelType = Literal["insightface", "deepface"]
 
 class FaceRecognitionBase:
@@ -71,7 +72,7 @@ class FaceRecognitionBase:
             return 0
     
     def compare_face(self, embedding: np.ndarray, db: Session, user_id: int = None,
-                 threshold: float = 0.5, model_type: str = None) -> Tuple[bool, Optional[int], float]:
+                 threshold: float = face_recognition_config.SIMILARITY_THRESHOLD, model_type: str = None) -> Tuple[bool, Optional[int], float]:
         """Compare a face embedding with stored embeddings"""
         from models.database import FaceEmbedding
         import pickle
@@ -106,7 +107,7 @@ class FaceRecognitionBase:
                     
                     # Calculate cosine similarity
                     similarity = self.calculate_similarity(embedding, stored_embedding)
-                    
+
                     if similarity > best_score:
                         best_score = similarity
                         best_match = stored
@@ -124,7 +125,8 @@ class FaceRecognitionBase:
         except Exception as e:
             logger.error(f"Error comparing face embeddings: {str(e)}")
             return False, None, 0.0
-    
+        
+
     def calculate_similarity(self, embedding1: np.ndarray, embedding2: np.ndarray) -> float:
         """Calculate cosine similarity between two embeddings"""
 

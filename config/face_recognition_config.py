@@ -19,13 +19,30 @@ class FaceRecognitionConfig(BaseModel):
     ANTI_SPOOFING_THRESHOLD: float = 0.85
     REGISTRATION_ANTI_SPOOFING_THRESHOLD: float = 0.85
     ENABLE_REGISTRATION_ANTISPOOFING: bool = True  
-    
+
+    # thresholds = {
+    #     # "VGG-Face": {"cosine": 0.40, "euclidean": 0.60, "euclidean_l2": 0.86}, # 2622d
+    #     "VGG-Face": {
+    #         "cosine": 0.68,
+    #         "euclidean": 1.17,
+    #         "euclidean_l2": 1.17,
+    #     },  # 4096d - tuned with LFW
+    #     "Facenet": {"cosine": 0.40, "euclidean": 10, "euclidean_l2": 0.80},
+    #     "Facenet512": {"cosine": 0.30, "euclidean": 23.56, "euclidean_l2": 1.04},
+    #     "ArcFace": {"cosine": 0.68, "euclidean": 4.15, "euclidean_l2": 1.13},
+    #     "Dlib": {"cosine": 0.07, "euclidean": 0.6, "euclidean_l2": 0.4},
+    #     "SFace": {"cosine": 0.593, "euclidean": 10.734, "euclidean_l2": 1.055},
+    #     "OpenFace": {"cosine": 0.10, "euclidean": 0.55, "euclidean_l2": 0.55},
+    #     "DeepFace": {"cosine": 0.23, "euclidean": 64, "euclidean_l2": 0.64},
+    #     "DeepID": {"cosine": 0.015, "euclidean": 45, "euclidean_l2": 0.17},
+    #     "GhostFaceNet": {"cosine": 0.65, "euclidean": 35.71, "euclidean_l2": 1.10},
+    # }
 
     ENABLE_DUPLICATE_DETECTION: bool = True 
-    DUPLICATE_DETECTION_THRESHOLD: float = 0.5
-    
-    SIMILARITY_THRESHOLD: float = 0.5
-    
+    DUPLICATE_DETECTION_THRESHOLD: float = 0.85
+    SIMILARITY_THRESHOLD: float = 0.85 # should be 0.7 for facenet but for security, im going to use 0.8 for facenet
+
+
     FACE_MIN_WIDTH_RATIO: float = 0.25  
     FACE_MIN_HEIGHT_RATIO: float = 0.25 
     FACE_MARGIN_RATIO: float = 0.05

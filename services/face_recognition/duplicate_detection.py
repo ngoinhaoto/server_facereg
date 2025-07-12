@@ -3,7 +3,6 @@ import numpy as np
 from utils.logging import logger
 from config.face_recognition_config import face_recognition_config
 from models.database import User, FaceEmbedding
-
 class DuplicateFaceDetector:
     """Service to detect duplicate faces across users"""
     
@@ -44,7 +43,7 @@ class DuplicateFaceDetector:
                             similarity = np.dot(embedding, stored_embedding) / (
                                 np.linalg.norm(embedding) * np.linalg.norm(stored_embedding)
                             )
-                            
+
                             logger.debug(f"Similarity with user {user.username}: {similarity:.4f}")
                             
                             # Track highest similarity
