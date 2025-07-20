@@ -1,0 +1,47 @@
+{
+    "VGG-Face": {
+        "total_tests": 16,
+        "correct_rejections": 16,
+        "total_verification_time": 7.172381401062012,
+        "rejection_rate": 100.0,
+        "avg_verification_time_ms": 448.27383756637573,
+        "average_cosine_distance": 0.5821658497568123,
+        "threshold": 0.5
+    },
+    "Facenet": {
+        "total_tests": 16,
+        "correct_rejections": 16,
+        "total_verification_time": 7.603729248046875,
+        "rejection_rate": 100.0,
+        "avg_verification_time_ms": 475.2330780029297,
+        "average_cosine_distance": 0.42669005239046975,
+        "threshold": 0.298
+    },
+    "Facenet512": {
+        "total_tests": 16,
+        "correct_rejections": 16,
+        "total_verification_time": 7.53828239440918,
+        "rejection_rate": 100.0,
+        "avg_verification_time_ms": 471.14264965057373,
+        "average_cosine_distance": 0.4542578836412783,
+        "threshold": 0.34
+    },
+    "ArcFace": {
+        "total_tests": 16,
+        "correct_rejections": 16,
+        "total_verification_time": 4.845706224441528,
+        "rejection_rate": 100.0,
+        "avg_verification_time_ms": 302.8566390275955,
+        "average_cosine_distance": 0.6220381918375537,
+        "threshold": 0.52
+    },
+    "SFace": {
+        "total_tests": 16,
+        "correct_rejections": 16,
+        "total_verification_time": 4.0512917041778564,
+        "rejection_rate": 100.0,
+        "avg_verification_time_ms": 253.20573151111603,
+        "average_cosine_distance": 0.6470037544602385,
+        "threshold": 0.53
+    }
+}

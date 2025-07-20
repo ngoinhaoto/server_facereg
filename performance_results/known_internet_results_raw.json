@@ -1,0 +1,62 @@
+{
+    "VGG-Face": {
+        "total_tests": 16,
+        "correct_predictions": 10,
+        "false_positives_wrong_match": 0,
+        "false_negatives_rejected_distance": 6,
+        "false_negatives_no_face_detected": 0,
+        "total_verification_time": 7.12350058555603,
+        "accuracy": 62.5,
+        "avg_verification_time_ms": 445.2187865972519,
+        "average_cosine_distance": 0.5070029028791729,
+        "threshold": 0.51
+    },
+    "Facenet": {
+        "total_tests": 16,
+        "correct_predictions": 3,
+        "false_positives_wrong_match": 0,
+        "false_negatives_rejected_distance": 13,
+        "false_negatives_no_face_detected": 0,
+        "total_verification_time": 6.883079767227173,
+        "accuracy": 18.75,
+        "avg_verification_time_ms": 430.1924854516983,
+        "average_cosine_distance": 0.35547219231800486,
+        "threshold": 0.296
+    },
+    "Facenet512": {
+        "total_tests": 16,
+        "correct_predictions": 12,
+        "false_positives_wrong_match": 0,
+        "false_negatives_rejected_distance": 4,
+        "false_negatives_no_face_detected": 0,
+        "total_verification_time": 7.054369688034058,
+        "accuracy": 75.0,
+        "avg_verification_time_ms": 440.8981055021286,
+        "average_cosine_distance": 0.3162525261996055,
+        "threshold": 0.34
+    },
+    "ArcFace": {
+        "total_tests": 16,
+        "correct_predictions": 12,
+        "false_positives_wrong_match": 1,
+        "false_negatives_rejected_distance": 3,
+        "false_negatives_no_face_detected": 0,
+        "total_verification_time": 4.594730615615845,
+        "accuracy": 75.0,
+        "avg_verification_time_ms": 287.1706634759903,
+        "average_cosine_distance": 0.41161391562560634,
+        "threshold": 0.52
+    },
+    "SFace": {
+        "total_tests": 16,
+        "correct_predictions": 9,
+        "false_positives_wrong_match": 1,
+        "false_negatives_rejected_distance": 6,
+        "false_negatives_no_face_detected": 0,
+        "total_verification_time": 3.7896299362182617,
+        "accuracy": 56.25,
+        "avg_verification_time_ms": 236.85187101364136,
+        "average_cosine_distance": 0.5213959899700673,
+        "threshold": 0.53
+    }
+}

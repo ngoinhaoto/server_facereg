@@ -1,0 +1,6 @@
+Model,Correct Rejection Rate (%),Correct Rejections,Avg Verification Time (ms/image),Avg Cosine Distance,Threshold
+VGG-Face,100.00,16/16,448.27,0.5822,0.500
+Facenet,100.00,16/16,475.23,0.4267,0.298
+Facenet512,100.00,16/16,471.14,0.4543,0.340
+ArcFace,100.00,16/16,302.86,0.6220,0.520
+SFace,100.00,16/16,253.21,0.6470,0.530

@@ -1,0 +1,56 @@
+{
+    "VGG-Face": {
+        "total_tests": 28,
+        "correct_predictions": 28,
+        "total_verification_time": 9.639407634735107,
+        "accuracy": 100.0,
+        "avg_verification_time_ms": 344.2645583833967,
+        "average_cosine_distance": 0.37144135061818245,
+        "threshold": 0.68
+    },
+    "Facenet": {
+        "total_tests": 28,
+        "correct_predictions": 28,
+        "total_verification_time": 10.55341124534607,
+        "accuracy": 100.0,
+        "avg_verification_time_ms": 376.90754447664534,
+        "average_cosine_distance": 0.22939402444846796,
+        "threshold": 0.4
+    },
+    "Facenet512": {
+        "total_tests": 28,
+        "correct_predictions": 25,
+        "total_verification_time": 10.26095461845398,
+        "accuracy": 89.28571428571429,
+        "avg_verification_time_ms": 366.462664944785,
+        "average_cosine_distance": 0.2087783080058121,
+        "threshold": 0.3
+    },
+    "OpenFace": {
+        "total_tests": 28,
+        "correct_predictions": 2,
+        "total_verification_time": 7.8350348472595215,
+        "accuracy": 7.142857142857142,
+        "avg_verification_time_ms": 279.82267311641147,
+        "average_cosine_distance": 0.10415359428694107,
+        "threshold": 0.1
+    },
+    "ArcFace": {
+        "total_tests": 28,
+        "correct_predictions": 26,
+        "total_verification_time": 6.148738384246826,
+        "accuracy": 92.85714285714286,
+        "avg_verification_time_ms": 219.59779943738664,
+        "average_cosine_distance": 0.3850328717389012,
+        "threshold": 0.68
+    },
+    "SFace": {
+        "total_tests": 28,
+        "correct_predictions": 20,
+        "total_verification_time": 4.802720069885254,
+        "accuracy": 71.42857142857143,
+        "avg_verification_time_ms": 171.5257167816162,
+        "average_cosine_distance": 0.4266953254426669,
+        "threshold": 0.593
+    }
+}

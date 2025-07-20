@@ -1,0 +1,6 @@
+Model,Accuracy (%),Correct Predictions,Wrong Matches (FP),Rejections (FN - Distance),Rejections (FN - No Face),Avg Verification Time (ms/image),Avg Cosine Distance,Threshold
+VGG-Face,62.50,10/16,0,6,0,445.22,0.5070,0.510
+Facenet,18.75,3/16,0,13,0,430.19,0.3555,0.296
+Facenet512,75.00,12/16,0,4,0,440.90,0.3163,0.340
+ArcFace,75.00,12/16,1,3,0,287.17,0.4116,0.520
+SFace,56.25,9/16,1,6,0,236.85,0.5214,0.530

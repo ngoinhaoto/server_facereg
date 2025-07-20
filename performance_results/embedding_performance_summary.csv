@@ -1,0 +1,7 @@
+Model,Model Load Time (ms),Total Build Time (s),Avg Embedding Time (ms/image),Failed Images,Failure Rate (%),Embedding Size
+VGG-Face,0.19,63.66,52.22,0/1219,0.00,4096
+Facenet,0.04,262.42,215.28,0/1219,0.00,128
+Facenet512,0.01,300.61,246.61,0/1219,0.00,512
+OpenFace,0.04,179.22,147.02,0/1219,0.00,128
+ArcFace,0.01,93.94,77.07,0/1219,0.00,512
+SFace,0.01,46.99,38.55,0/1219,0.00,128

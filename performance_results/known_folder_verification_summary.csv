@@ -1,0 +1,7 @@
+Model,Accuracy (%),Correct Predictions,Avg Verification Time (ms/image),Avg Cosine Distance,Threshold
+VGG-Face,100.00,28/28,344.26,0.3714,0.680
+Facenet,100.00,28/28,376.91,0.2294,0.400
+Facenet512,89.29,25/28,366.46,0.2088,0.300
+OpenFace,7.14,2/28,279.82,0.1042,0.100
+ArcFace,92.86,26/28,219.60,0.3850,0.680
+SFace,71.43,20/28,171.53,0.4267,0.593

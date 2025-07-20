@@ -1,0 +1,62 @@
+{
+    "VGG-Face": {
+        "build_time": 64.66924905776978,
+        "embedded_image_count": 1219,
+        "failed_images_count": 0,
+        "total_database_images": 1219,
+        "failure_rate": 0.0,
+        "avg_embedding_time_ms": 53.0510656749547,
+        "embedding_size": 4096,
+        "model_load_time": 0.0002682209014892578
+    },
+    "Facenet": {
+        "build_time": 265.53523206710815,
+        "embedded_image_count": 1219,
+        "failed_images_count": 0,
+        "total_database_images": 1219,
+        "failure_rate": 0.0,
+        "avg_embedding_time_ms": 217.83037905423146,
+        "embedding_size": 128,
+        "model_load_time": 2.7512168884277344
+    },
+    "Facenet512": {
+        "build_time": 257.64866375923157,
+        "embedded_image_count": 1219,
+        "failed_images_count": 0,
+        "total_database_images": 1219,
+        "failure_rate": 0.0,
+        "avg_embedding_time_ms": 211.36067576639178,
+        "embedding_size": 512,
+        "model_load_time": 1.4158821105957031
+    },
+    "OpenFace": {
+        "build_time": 186.91872596740723,
+        "embedded_image_count": 1219,
+        "failed_images_count": 0,
+        "total_database_images": 1219,
+        "failure_rate": 0.0,
+        "avg_embedding_time_ms": 153.33775715127746,
+        "embedding_size": 128,
+        "model_load_time": 0.9383292198181152
+    },
+    "ArcFace": {
+        "build_time": 96.62289881706238,
+        "embedded_image_count": 1219,
+        "failed_images_count": 0,
+        "total_database_images": 1219,
+        "failure_rate": 0.0,
+        "avg_embedding_time_ms": 79.26406793852533,
+        "embedding_size": 512,
+        "model_load_time": 0.989830732345581
+    },
+    "SFace": {
+        "build_time": 44.455504179000854,
+        "embedded_image_count": 1219,
+        "failed_images_count": 0,
+        "total_database_images": 1219,
+        "failure_rate": 0.0,
+        "avg_embedding_time_ms": 36.468830335521616,
+        "embedding_size": 128,
+        "model_load_time": 0.05501198768615723
+    }
+}

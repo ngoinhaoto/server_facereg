@@ -1,0 +1,62 @@
+{
+    "VGG-Face": {
+        "build_time": 63.65547490119934,
+        "embedded_image_count": 1219,
+        "failed_images_count": 0,
+        "total_database_images": 1219,
+        "failure_rate": 0.0,
+        "avg_embedding_time_ms": 52.2194215760454,
+        "embedding_size": 4096,
+        "model_load_time": 0.00018715858459472656
+    },
+    "Facenet": {
+        "build_time": 262.42196011543274,
+        "embedded_image_count": 1219,
+        "failed_images_count": 0,
+        "total_database_images": 1219,
+        "failure_rate": 0.0,
+        "avg_embedding_time_ms": 215.27642339247967,
+        "embedding_size": 128,
+        "model_load_time": 3.719329833984375e-05
+    },
+    "Facenet512": {
+        "build_time": 300.61243414878845,
+        "embedded_image_count": 1219,
+        "failed_images_count": 0,
+        "total_database_images": 1219,
+        "failure_rate": 0.0,
+        "avg_embedding_time_ms": 246.60577042558526,
+        "embedding_size": 512,
+        "model_load_time": 8.106231689453125e-06
+    },
+    "OpenFace": {
+        "build_time": 179.22145009040833,
+        "embedded_image_count": 1219,
+        "failed_images_count": 0,
+        "total_database_images": 1219,
+        "failure_rate": 0.0,
+        "avg_embedding_time_ms": 147.02333887646293,
+        "embedding_size": 128,
+        "model_load_time": 3.814697265625e-05
+    },
+    "ArcFace": {
+        "build_time": 93.94322729110718,
+        "embedded_image_count": 1219,
+        "failed_images_count": 0,
+        "total_database_images": 1219,
+        "failure_rate": 0.0,
+        "avg_embedding_time_ms": 77.06581402059653,
+        "embedding_size": 512,
+        "model_load_time": 8.344650268554688e-06
+    },
+    "SFace": {
+        "build_time": 46.99493408203125,
+        "embedded_image_count": 1219,
+        "failed_images_count": 0,
+        "total_database_images": 1219,
+        "failure_rate": 0.0,
+        "avg_embedding_time_ms": 38.552037803142944,
+        "embedding_size": 128,
+        "model_load_time": 7.867813110351562e-06
+    }
+}
