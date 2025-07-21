@@ -1,0 +1,58 @@
+[
+    {
+        "Algorithm": "Paillier",
+        "Encryption Time (s)": 2.3618406454722085,
+        "Dot Product Calculation Time (s)": 0.9766111373901367,
+        "Decryption Time (s)": 0.06663393974304199,
+        "Ciphertext Size (MB/emb)": 5.340576171875e-05,
+        "Loss (Ethel1 vs Ethel2)": 1.0313971898767704e-13,
+        "Loss (Ethel1 vs Lana)": 3.4139358007223564e-14,
+        "Plaintext Dot Product 1-2": 0.5398334706393569,
+        "Decrypted Dot Product 1-2": 0.5398334706392538,
+        "Plaintext Dot Product 1-L": 0.11514278188472571,
+        "Decrypted Dot Product 1-L": 0.11514278188469157,
+        "Error": null
+    },
+    {
+        "Algorithm": "Damgard-Jurik",
+        "Encryption Time (s)": 4.311882654825847,
+        "Dot Product Calculation Time (s)": 2.206510066986084,
+        "Decryption Time (s)": 0.1428079605102539,
+        "Ciphertext Size (MB/emb)": 5.340576171875e-05,
+        "Loss (Ethel1 vs Ethel2)": 1.0313971898767704e-13,
+        "Loss (Ethel1 vs Lana)": 3.4139358007223564e-14,
+        "Plaintext Dot Product 1-2": 0.5398334706393569,
+        "Decrypted Dot Product 1-2": 0.5398334706392538,
+        "Plaintext Dot Product 1-L": 0.11514278188472571,
+        "Decrypted Dot Product 1-L": 0.11514278188469157,
+        "Error": null
+    },
+    {
+        "Algorithm": "Okamoto-Uchiyama",
+        "Encryption Time (s)": 2.2951669692993164,
+        "Dot Product Calculation Time (s)": 0.7093627452850342,
+        "Decryption Time (s)": 0.020799875259399414,
+        "Ciphertext Size (MB/emb)": 5.340576171875e-05,
+        "Loss (Ethel1 vs Ethel2)": 1.0313971898767704e-13,
+        "Loss (Ethel1 vs Lana)": 3.4139358007223564e-14,
+        "Plaintext Dot Product 1-2": 0.5398334706393569,
+        "Decrypted Dot Product 1-2": 0.5398334706392538,
+        "Plaintext Dot Product 1-L": 0.11514278188472571,
+        "Decrypted Dot Product 1-L": 0.11514278188469157,
+        "Error": null
+    },
+    {
+        "Algorithm": "Naccache-Stern",
+        "Encryption Time (s)": 0.8828120231628418,
+        "Dot Product Calculation Time (s)": 0.03643202781677246,
+        "Decryption Time (s)": 0.000743865966796875,
+        "Ciphertext Size (MB/emb)": 5.340576171875e-05,
+        "Loss (Ethel1 vs Ethel2)": 0.3856279227596673,
+        "Loss (Ethel1 vs Lana)": 0.47490929591312736,
+        "Plaintext Dot Product 1-2": 0.5398334706393569,
+        "Decrypted Dot Product 1-2": 0.15420554787968965,
+        "Plaintext Dot Product 1-L": 0.11514278188472571,
+        "Decrypted Dot Product 1-L": 0.5900520777978531,
+        "Error": null
+    }
+]
