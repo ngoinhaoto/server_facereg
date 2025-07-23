@@ -40,7 +40,7 @@ class FaceRecognitionConfig(BaseModel):
 
     ENABLE_DUPLICATE_DETECTION: bool = True 
     DUPLICATE_DETECTION_THRESHOLD: float = 0.85
-    SIMILARITY_THRESHOLD: float = 0.85 # should be 0.7 for facenet but for security, im going to use 0.8 for facenet
+    SIMILARITY_THRESHOLD: float = 0.85 # should be 0.7 for facenet512 but for security, im going to use 0.8 for facenet512
 
 
     FACE_MIN_WIDTH_RATIO: float = 0.25  

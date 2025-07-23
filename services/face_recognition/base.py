@@ -71,61 +71,48 @@ class FaceRecognitionBase:
             db.rollback()
             return 0
     
-    def compare_face(self, embedding: np.ndarray, db: Session, user_id: int = None,
-                 threshold: float = face_recognition_config.SIMILARITY_THRESHOLD, model_type: str = None) -> Tuple[bool, Optional[int], float]:
+    def compare_face(self, embedding: np.ndarray, db: Session, class_id: int, threshold: float = face_recognition_config.SIMILARITY_THRESHOLD) -> Tuple[bool, Optional[int], float]:
         """Compare a face embedding with stored embeddings"""
-        from models.database import FaceEmbedding
-        import pickle
+        from models.database import FaceEmbedding, Class
         
         try:
-            # Use provided model_type or default to service's model_type
-            model_to_use = model_type if model_type else self.model_type
-            
-            # Query embeddings
-            query = db.query(FaceEmbedding)
-            if user_id:
-                query = query.filter(FaceEmbedding.user_id == user_id)
-            
-            # Filter by model type
-            query = query.filter(FaceEmbedding.model_type == model_to_use)
-            
-            stored_embeddings = query.all()
-            
-            if not stored_embeddings:
-                logger.warning(f"No stored embeddings found for comparison with model {model_to_use}")
+            # Query students enrolled in the class
+            class_obj = db.query(Class).filter(Class.id == class_id).first()
+            if not class_obj:
+                logger.error(f"Class with ID {class_id} not found.")
                 return False, None, 0.0
-            
-            best_match = None
+
+            enrolled_student_ids = [student.id for student in class_obj.students]
+
+            # Query embeddings for enrolled students
+            stored_embeddings = db.query(FaceEmbedding).filter(
+                FaceEmbedding.user_id.in_(enrolled_student_ids)
+            ).all()
+
+            if not stored_embeddings:
+                logger.warning(f"No stored embeddings found for class {class_id}.")
+                return False, None, 0.0
+
             best_score = 0.0
             best_user_id = None
-            
-            for stored in stored_embeddings:
-                # Deserialize the stored embedding
-                try:
-                    # stored_embedding = pickle.loads(stored.encrypted_embedding)
-                    stored_embedding = stored.embedding
-                    
-                    # Calculate cosine similarity
-                    similarity = self.calculate_similarity(embedding, stored_embedding)
 
-                    if similarity > best_score:
-                        best_score = similarity
-                        best_match = stored
-                        best_user_id = stored.user_id
-                except Exception as e:
-                    logger.error(f"Error deserializing embedding: {str(e)}")
-                    continue
-            
+            for stored in stored_embeddings:
+                stored_embedding = stored.embedding
+                similarity = self.calculate_similarity(embedding, stored_embedding)
+
+                if similarity > best_score:
+                    best_score = similarity
+                    best_user_id = stored.user_id
+
             # Check if the best match exceeds the threshold
             if best_score >= threshold:
                 return True, best_user_id, best_score
             else:
                 return False, None, best_score
-                
+
         except Exception as e:
             logger.error(f"Error comparing face embeddings: {str(e)}")
-            return False, None, 0.0
-        
+            return False, None, 0.0        
 
     def calculate_similarity(self, embedding1: np.ndarray, embedding2: np.ndarray) -> float:
         """Calculate cosine similarity between two embeddings"""

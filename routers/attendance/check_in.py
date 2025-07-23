@@ -104,7 +104,7 @@ async def check_in(
     
     # Continue with face matching
     match, matched_user_id, similarity = await run_in_threadpool(
-        lambda: face_service.compare_face(embedding, db, user_id=None, 
+        lambda: face_service.compare_face(embedding=embedding, db=db, class_id=session.class_id, 
                                          threshold=face_recognition_config.SIMILARITY_THRESHOLD)
     )
     
