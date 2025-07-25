@@ -5,3 +5,6 @@ sample_images/
 *.pyc
 test_data/
 models/
+keys/
+phe_keys/
+.DS_Store
