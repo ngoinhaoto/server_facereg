@@ -73,7 +73,8 @@ class TeacherInfo(BaseModel):
     model_config = {
         "from_attributes": True
     }
-
+    
 class ClassWithTeacherResponse(ClassResponse):
     teacher: Optional[TeacherInfo] = None
-    sessions: Optional[List[ClassSessionBase]] = None
+    # CHANGE THIS LINE: Use ClassSessionResponse instead of ClassSessionBase
+    sessions: Optional[List[ClassSessionResponse]] = None
